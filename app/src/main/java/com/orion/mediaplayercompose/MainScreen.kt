@@ -41,7 +41,7 @@ fun MainScreen(viewModel: PlayerViewModel, onNavigateToPlaylists: () -> Unit) {
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
 
-        Card(modifier = Modifier.height(60.dp)) {
+        Card(modifier = Modifier.height(70.dp)) {
             UpperContainer(onNavigateToPlaylists = onNavigateToPlaylists)
         }
 
@@ -223,7 +223,7 @@ fun MainScreen(viewModel: PlayerViewModel, onNavigateToPlaylists: () -> Unit) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UpperContainer(onNavigateToPlaylists: () -> Unit) {
-    Row(modifier = Modifier.height(50.dp)) {
+    Row(modifier = Modifier.height(60.dp)) {
 
         PlaybackOrderMenu()
 
@@ -232,7 +232,7 @@ fun UpperContainer(onNavigateToPlaylists: () -> Unit) {
         OutlinedTextField(
             value = text,
             modifier = Modifier
-                .height(50.dp)
+                .height(55.dp)
                 .padding(horizontal = 8.dp)
                 .weight(1f)
                 .align(alignment = Alignment.CenterVertically),
@@ -253,8 +253,6 @@ fun UpperContainer(onNavigateToPlaylists: () -> Unit) {
                     fontSize = 12.sp,
                     textAlign = TextAlign.Center,
                     color = MaterialTheme.colorScheme.primary,
-
-
                     )
             },
             shape = RoundedCornerShape(25.dp),
@@ -263,7 +261,7 @@ fun UpperContainer(onNavigateToPlaylists: () -> Unit) {
 
         IconButton(
             onClick =  onNavigateToPlaylists,
-            modifier = Modifier.padding(top = 8.dp, end = 16.dp).requiredSize(40.dp)
+            modifier = Modifier.padding(top = 16.dp, end = 16.dp).requiredSize(40.dp)
         ) {
             Icon(
                 painterResource(id = R.drawable.ic_playlist),
@@ -324,7 +322,7 @@ fun PlaybackOrderMenu() {
     Box {
         IconButton(
             onClick = { playbackOrder = true },
-            modifier = Modifier.padding(top = 8.dp, start = 16.dp).requiredSize(40.dp)
+            modifier = Modifier.padding(top = 16.dp, start = 16.dp).requiredSize(40.dp)
         ) {
             Icon(
                 painterResource(id = R.drawable.ic_sort),

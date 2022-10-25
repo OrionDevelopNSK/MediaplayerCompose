@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -26,14 +27,9 @@ fun SongChooserScreen(viewModel: PlayerViewModel, onNavigateToPlaylists: () -> U
     val songs = viewModel.songs.observeAsState(listOf())
     val listState: LazyListState = rememberLazyListState()
     val coroutineScope: CoroutineScope = rememberCoroutineScope()
-    val states: MutableList<MutableState<Boolean>> = mutableListOf()
 
     if (songs.value?.isNotEmpty() == true) {
-        val isChooses: MutableList<Boolean> = MutableList(songs.value.size) { false }
-
-        for (i in 1..songs.value.size) {
-            states.add(remember { mutableStateOf(false) })
-        }
+        val isChooses: MutableList<Boolean> = MutableList(songs.value.size) { false }.toMutableStateList()
 
         Column(
             modifier = Modifier
@@ -43,11 +39,8 @@ fun SongChooserScreen(viewModel: PlayerViewModel, onNavigateToPlaylists: () -> U
             verticalArrangement = Arrangement.spacedBy(10.dp)
 
         ) {
-
-
             Card(modifier = Modifier.weight(1f)) {
                 Column {
-
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -117,13 +110,13 @@ fun SongChooserScreen(viewModel: PlayerViewModel, onNavigateToPlaylists: () -> U
                                 }
                                 Checkbox(
                                     //TODO
-                                    checked = states[index].value,
+                                    checked = isChooses[index],
                                     //TODO
                                     onCheckedChange = {
-                                        states[index].value = it
                                         isChooses[index] = it
                                     },
                                     colors = CheckboxDefaults.colors(uncheckedColor = MaterialTheme.colorScheme.primary),
+                                    modifier = Modifier.padding(end = 8.dp)
                                 )
                             }
                         }
@@ -156,7 +149,7 @@ fun SongChooserScreen(viewModel: PlayerViewModel, onNavigateToPlaylists: () -> U
                             .padding(8.dp)
                     ) {
 
-                        OutlinedButton(onClick = onNavigateToPlaylists) {
+                        Button(onClick = onNavigateToPlaylists) {
                             Text(
                                 text = "BACK",
                                 fontSize = 30.sp,
@@ -164,11 +157,12 @@ fun SongChooserScreen(viewModel: PlayerViewModel, onNavigateToPlaylists: () -> U
                             )
                         }
 
-                        OutlinedButton(
+                        Button(
                             onClick = {
                                 if (isChooses.all { !it }) viewModel.savePlaylist(isChooses)
                                 onNavigateToPlaylists.invoke()
-                            }
+                            },
+                            enabled = !isChooses.all { !it }
 
                         ) {
                             Text(
