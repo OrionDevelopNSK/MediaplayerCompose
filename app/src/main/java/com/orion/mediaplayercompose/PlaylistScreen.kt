@@ -22,6 +22,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import com.orion.mediaplayercompose.data.models.Playlist
 import com.orion.mediaplayercompose.data.models.Song
 import com.orion.mediaplayercompose.utils.snappyLazyColumn
@@ -42,6 +43,85 @@ fun PlaylistScreen(viewModel: PlayerViewModel, onNavigateToSongChooser: () -> Un
 
     var text by remember { mutableStateOf(TextFieldValue("")) }
 
+    val openDialog = remember { mutableStateOf(false) }
+    //val text = remember { mutableStateOf("") }
+
+
+    if (openDialog.value){
+        Dialog(onDismissRequest = { openDialog.value = false }, ) {
+            Card {
+                Column(verticalArrangement = Arrangement.Top, modifier = Modifier.padding(8.dp)) {
+                    Text(
+                        text = "CREATE PLAYLIST",
+                        fontSize = 24.sp,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+
+                    Divider(
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 16.dp)
+                    )
+
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp)
+                    ) {
+
+                        OutlinedTextField(
+                            value = text,
+                            modifier = Modifier
+                                .defaultMinSize(minHeight = 40.dp)
+                                .weight(1f)
+                                .padding(end = 16.dp),
+                            maxLines = 1,
+                            singleLine = true,
+                            leadingIcon = {
+                                Icon(
+                                    painterResource(id = R.drawable.ic_playlist),
+                                    modifier = Modifier.size(30.dp),
+                                    contentDescription = "emailIcon",
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            },
+                            onValueChange = { text = it },
+                            label = {
+                                Text(
+                                    text = "Playlist name",
+                                    fontSize = 16.sp,
+                                    textAlign = TextAlign.Center,
+                                    color = MaterialTheme.colorScheme.primary,
+                                )
+                            },
+                            shape = RoundedCornerShape(25.dp),
+                            textStyle = TextStyle(textAlign = TextAlign.Center, fontSize = 14.sp)
+                        )
+
+                        IconButton(
+                            onClick = onNavigateToSongChooser,
+                            modifier = Modifier
+                                .padding(top = 8.dp)
+                                .requiredSize(45.dp),
+                            enabled = text.text.isNotEmpty()
+                        ) {
+                            Icon(
+                                painterResource(id = R.drawable.ic_playlist_add),
+                                contentDescription = "Play",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+                }
+            }
+
+        }
+    }
+
     Column(
         modifier = Modifier
             .padding(16.dp)
@@ -50,91 +130,19 @@ fun PlaylistScreen(viewModel: PlayerViewModel, onNavigateToSongChooser: () -> Un
         verticalArrangement = Arrangement.spacedBy(10.dp)
 
     ) {
-
-        Card {
-            Column(verticalArrangement = Arrangement.Top, modifier = Modifier.padding(8.dp)) {
-                Text(
-                    text = "CREATE PLAYLIST",
-                    fontSize = 24.sp,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 8.dp),
-                    color = MaterialTheme.colorScheme.primary
-                )
-
-                Divider(
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(horizontal = 8.dp)
-                )
-
-                Row(
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp)
-                ) {
-
-                    OutlinedTextField(
-                        value = text,
-                        modifier = Modifier
-                            .defaultMinSize(minHeight = 40.dp)
-                            .weight(1f)
-                            .padding(end = 16.dp),
-                        maxLines = 1,
-                        singleLine = true,
-                        leadingIcon = {
-                            Icon(
-                                painterResource(id = R.drawable.ic_playlist),
-                                modifier = Modifier.size(30.dp),
-                                contentDescription = "emailIcon",
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        },
-                        onValueChange = { text = it },
-                        label = {
-                            Text(
-                                text = "Playlist name",
-                                fontSize = 16.sp,
-                                textAlign = TextAlign.Center,
-                                color = MaterialTheme.colorScheme.primary,
-                            )
-                        },
-                        shape = RoundedCornerShape(25.dp),
-                        textStyle = TextStyle(textAlign = TextAlign.Center, fontSize = 14.sp)
-                    )
-
-                    IconButton(
-                        onClick = onNavigateToSongChooser,
-                        modifier = Modifier
-                            .padding(top = 8.dp)
-                            .requiredSize(45.dp),
-                    ) {
-                        Icon(
-                            painterResource(id = R.drawable.ic_playlist_add),
-                            contentDescription = "Play",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
-            }
-        }
-
         Card(modifier = Modifier.weight(1f)) {
-            Column(verticalArrangement = Arrangement.Top, modifier = Modifier.padding(8.dp)) {
-                Text(
-                    text = "PLAYLISTS",
-                    fontSize = 24.sp,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 8.dp),
-                    color = MaterialTheme.colorScheme.primary
-                )
+            Column(verticalArrangement = Arrangement.Top, modifier = Modifier.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                OutlinedButton(onClick = {openDialog.value = true}) {
+                    Text(
+                        text = "CREATE PLAYLIST",
+                        fontSize = 30.sp,
+                        fontFamily = FontFamily(Font(R.font.yanone_kaffeesatz_light))
+                    )
+                }
 
                 Divider(
                     color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(horizontal = 8.dp)
+                    modifier = Modifier.padding(bottom = 16.dp, start = 8.dp, end = 8.dp, top = 8.dp)
                 )
 
                 LazyColumn(state = listState, modifier = Modifier.padding(vertical = 8.dp)) {
@@ -172,6 +180,8 @@ fun PlaylistScreen(viewModel: PlayerViewModel, onNavigateToSongChooser: () -> Un
         }
     }
 }
+
+
 
 
 @Composable
