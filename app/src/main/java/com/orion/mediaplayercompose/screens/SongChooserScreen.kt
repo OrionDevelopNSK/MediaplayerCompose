@@ -1,4 +1,4 @@
-package com.orion.mediaplayercompose
+package com.orion.mediaplayercompose.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,6 +18,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.orion.mediaplayercompose.R
 import com.orion.mediaplayercompose.utils.snappyLazyColumn
 import com.orion.mediaplayercompose.viewmodels.PlayerViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -31,8 +32,6 @@ fun SongChooserScreen(viewModel: PlayerViewModel, onNavigateToPlaylists: () -> U
 
     if (songs.value?.isNotEmpty() == true) {
         val isChooses: MutableList<Boolean> =
-            MutableList(songs.value.size) { false }.toMutableStateList()
-        var isPlayed: MutableList<Boolean> =
             MutableList(songs.value.size) { false }.toMutableStateList()
 
         Column(

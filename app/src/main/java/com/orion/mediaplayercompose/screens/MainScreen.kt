@@ -1,4 +1,4 @@
-package com.orion.mediaplayercompose
+package com.orion.mediaplayercompose.screens
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -22,6 +22,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.orion.mediaplayercompose.R
 import com.orion.mediaplayercompose.ui.theme.ThirdColor
 import com.orion.mediaplayercompose.utils.SortingType
 import com.orion.mediaplayercompose.utils.StateMode

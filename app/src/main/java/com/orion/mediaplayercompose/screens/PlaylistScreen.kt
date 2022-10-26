@@ -1,4 +1,4 @@
-package com.orion.mediaplayercompose
+package com.orion.mediaplayercompose.screens
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -23,6 +23,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.orion.mediaplayercompose.R
 import com.orion.mediaplayercompose.data.models.Playlist
 import com.orion.mediaplayercompose.data.models.Song
 import com.orion.mediaplayercompose.utils.snappyLazyColumn
