@@ -24,6 +24,5 @@ class AudioPlayerFocus(private val context: Context) : AudioManager.OnAudioFocus
 
     override fun onAudioFocusChange(state: Int) {
         TODO("Not yet implemented")
-
     }
 }

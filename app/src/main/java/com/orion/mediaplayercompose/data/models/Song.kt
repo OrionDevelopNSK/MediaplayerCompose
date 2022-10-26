@@ -8,7 +8,8 @@ data class Song(
     val artist: String,
     val duration: Int,
     var rating: Int,
-    var countOfLaunches: Int
+    var countOfLaunches: Int,
+    var isPlayed: Boolean = false
 ) {
     fun toSongEntity(): SongEntity {
         return SongEntity(

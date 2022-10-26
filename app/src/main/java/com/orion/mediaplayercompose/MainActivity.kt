@@ -130,7 +130,8 @@ class MainActivity : ComponentActivity() {
             launch {
                 val roomSongRepository = RoomSongRepository(database.songDao())
                 val readMediaData = audioReader.readMediaData()
-                viewModel.songs.postValue(readMediaData)
+//                viewModel.songs.postValue(readMediaData)
+                viewModel.saveSongs(readMediaData)
                 AsyncTask.execute { roomSongRepository.insertAllSongs(readMediaData) }
 
             }

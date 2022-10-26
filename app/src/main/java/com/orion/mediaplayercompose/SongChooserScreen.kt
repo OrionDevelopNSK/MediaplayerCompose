@@ -6,9 +6,10 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -29,7 +30,10 @@ fun SongChooserScreen(viewModel: PlayerViewModel, onNavigateToPlaylists: () -> U
     val coroutineScope: CoroutineScope = rememberCoroutineScope()
 
     if (songs.value?.isNotEmpty() == true) {
-        val isChooses: MutableList<Boolean> = MutableList(songs.value.size) { false }.toMutableStateList()
+        val isChooses: MutableList<Boolean> =
+            MutableList(songs.value.size) { false }.toMutableStateList()
+        var isPlayed: MutableList<Boolean> =
+            MutableList(songs.value.size) { false }.toMutableStateList()
 
         Column(
             modifier = Modifier
@@ -61,21 +65,25 @@ fun SongChooserScreen(viewModel: PlayerViewModel, onNavigateToPlaylists: () -> U
                         modifier = Modifier.padding(horizontal = 16.dp)
                     )
 
-                    LazyColumn(state = listState, modifier = Modifier.padding(vertical = 8.dp)) {
+                    LazyColumn(state = listState, modifier = Modifier.padding(vertical = 9.dp)) {
                         itemsIndexed(songs.value) { index: Int, song ->
                             Row(
                                 horizontalArrangement = Arrangement.Center,
                                 modifier = Modifier.fillParentMaxHeight(0.1f)
                             ) {
                                 IconButton(
-                                    onClick = { println(song) },
+                                    onClick = {
+                                        val isState = songs.value[index].isPlayed
+                                        songs.value.forEach { it.isPlayed = false }
+                                        songs.value[index].isPlayed = !isState
+                                    },
+                                    modifier = Modifier
+                                        .padding(start = 16.dp)
+                                        .requiredSize(45.dp),
                                 ) {
                                     Icon(
-                                        painterResource(id = R.drawable.ic_play),
+                                        painterResource(id = if (!songs.value[index].isPlayed) R.drawable.ic_play else R.drawable.ic_pause),
                                         contentDescription = "Play",
-                                        modifier = Modifier
-                                            .padding(start = 16.dp)
-                                            .requiredSize(40.dp),
                                         tint = MaterialTheme.colorScheme.primary
                                     )
                                 }
