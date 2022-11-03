@@ -5,6 +5,7 @@ import com.orion.mediaplayercompose.utils.extentions.isHalfPastItemBottom
 import com.orion.mediaplayercompose.utils.extentions.isHalfPastItemTop
 import com.orion.mediaplayercompose.utils.extentions.scrollBasic
 import kotlinx.coroutines.CoroutineScope
+import kotlin.math.roundToInt
 
 fun snappyLazyColumn(listState: LazyListState, coroutineScope: CoroutineScope){
     if (!listState.isScrollInProgress) {
@@ -20,4 +21,10 @@ fun snappyLazyColumn(listState: LazyListState, coroutineScope: CoroutineScope){
             coroutineScope.scrollBasic(listState, left = true)
         }
     }
+}
+
+fun toMinutesAndSeconds(duration : Long) : String{
+    val min: Int = (duration / (60 * 1000)).toInt()
+    val sec = ((duration - min * 60 * 1000) / 1000f).roundToInt()
+    return String.format("%02d", min) + ":" + String.format("%02d", sec)
 }

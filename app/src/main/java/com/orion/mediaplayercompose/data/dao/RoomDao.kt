@@ -8,37 +8,41 @@ import com.orion.mediaplayercompose.data.models.Playlist
 import com.orion.mediaplayercompose.data.models.Song
 
 @Dao
-abstract class PlaylistDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    abstract fun insertPlaylist(playlists: PlaylistEntity)
+abstract class RoomDao {
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    abstract suspend fun insertAllSongs(list: MutableList<SongEntity>)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    abstract fun insertPlaylists(playlistSongEntityList: List<PlaylistSongEntity>)
+    abstract suspend fun insertPlaylist(playlists: PlaylistEntity)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    abstract suspend fun insertPlaylists(playlistSongEntityList: List<PlaylistSongEntity>)
 
     @Query("SELECT * FROM playlists")
-    abstract fun getAll(): List<PlaylistEntity>
+    abstract suspend fun getAll(): List<PlaylistEntity>
 
     @Transaction
     @Query("SELECT * FROM playlist_song WHERE playlistName =:name")
-    abstract fun getPlaylistSongEntities(name: String): List<PlaylistSongEntity>
+    abstract suspend fun getPlaylistSongEntities(name: String): List<PlaylistSongEntity>
 
     @Query("SELECT * FROM songs WHERE data =:data")
-    abstract fun getSongEntity(data: String): SongEntity
+    abstract suspend fun getSongEntity(data: String): SongEntity
 
     @Query("DELETE FROM playlist_song WHERE playlistName = :name")
-    abstract fun deleteByPlaylistNameFromLinkingTable(name: String)
+    abstract suspend fun deleteByPlaylistNameFromLinkingTable(name: String)
 
     @Query("DELETE FROM playlists WHERE playlistName = :name")
-    abstract fun deleteByPlaylistNameFromPlaylistTable(name: String)
+    abstract suspend fun deleteByPlaylistNameFromPlaylistTable(name: String)
 
     @Transaction
-    open fun deletePlaylist(playlist: PlaylistEntity) {
+    open suspend fun deletePlaylist(playlist: PlaylistEntity) {
         deleteByPlaylistNameFromLinkingTable(playlist.playlistName)
         deleteByPlaylistNameFromPlaylistTable(playlist.playlistName)
     }
 
     @Transaction
-    open fun insertPlaylistAndSoundTrack(
+    open suspend fun insertPlaylistAndSoundTrack(
         playlistEntity: PlaylistEntity,
         playlistSongEntityList: List<PlaylistSongEntity>
     ) {
@@ -46,8 +50,7 @@ abstract class PlaylistDao {
         insertPlaylists(playlistSongEntityList)
     }
 
-
-    open fun getPlaylistWithSoundTrack(): Map<Playlist, MutableList<Song>> {
+    suspend fun getPlaylistWithSoundTrack(): MutableMap<Playlist, MutableList<Song>> {
         val tmp = HashMap<Playlist, MutableList<Song>>()
         val all = getAll()
 

@@ -1,5 +1,6 @@
 package com.orion.mediaplayercompose.screens
 
+import androidx.activity.ComponentActivity
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -15,6 +16,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -32,15 +34,16 @@ import kotlinx.coroutines.CoroutineScope
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PlaylistScreen(viewModel: PlayerViewModel, onNavigateToSongChooser: () -> Unit) {
+fun PlaylistScreen(
+    viewModel: PlayerViewModel,
+    onNavigateToSongChooser: () -> Unit,
+    onNavigateToMainScreen: () -> Unit
+) {
 
     val playlists: State<Map<Playlist, MutableList<Song>>> =
-        viewModel.playlists.observeAsState(mapOf())
-
-    val currentPlaylist = viewModel.currentPlaylist.observeAsState()
+        viewModel.allPlaylists.observeAsState(mapOf())
     val listState: LazyListState = rememberLazyListState()
     val coroutineScope: CoroutineScope = rememberCoroutineScope()
-    val states: MutableList<MutableState<Boolean>> = mutableListOf()
     var text by remember { mutableStateOf(TextFieldValue("")) }
     val openDialog = remember { mutableStateOf(false) }
 
@@ -53,12 +56,12 @@ fun PlaylistScreen(viewModel: PlayerViewModel, onNavigateToSongChooser: () -> Un
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "CREATE PLAYLIST",
+                        text = stringResource(R.string.create_playlist).uppercase(),
                         fontSize = 24.sp,
                         textAlign = TextAlign.Center,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 8.dp),
+                            .padding(bottom = 8.dp, top = 8.dp),
                         color = MaterialTheme.colorScheme.primary
                     )
 
@@ -73,7 +76,8 @@ fun PlaylistScreen(viewModel: PlayerViewModel, onNavigateToSongChooser: () -> Un
                         value = text,
                         modifier = Modifier
                             .requiredHeight(60.dp)
-                            .fillMaxWidth().padding(horizontal = 8.dp),
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp),
                         maxLines = 1,
                         singleLine = true,
                         leadingIcon = {
@@ -87,7 +91,7 @@ fun PlaylistScreen(viewModel: PlayerViewModel, onNavigateToSongChooser: () -> Un
                         onValueChange = { text = it },
                         label = {
                             Text(
-                                text = "Playlist name",
+                                text = stringResource(R.string.playlist_name).uppercase(),
                                 fontSize = 12.sp,
                                 textAlign = TextAlign.Center,
                                 color = MaterialTheme.colorScheme.primary,
@@ -98,20 +102,25 @@ fun PlaylistScreen(viewModel: PlayerViewModel, onNavigateToSongChooser: () -> Un
                     )
 
                     Button(
-                        onClick = onNavigateToSongChooser,
+                        onClick = {
+                            viewModel.playlistName.value = text.text
+                            viewModel.clearChosenSongList()
+                            onNavigateToSongChooser.invoke()
+                        },
                         enabled = text.text.isNotEmpty(),
-                        modifier = Modifier.padding(vertical = 8.dp).fillMaxWidth().padding(horizontal = 8.dp)
+                        modifier = Modifier
+                            .padding(vertical = 8.dp)
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp)
                     ) {
                         Text(
-                            text = "CREATE",
+                            text = stringResource(R.string.create_playlist).uppercase(),
                             fontSize = 30.sp,
                             fontFamily = FontFamily(Font(R.font.yanone_kaffeesatz_light))
                         )
                     }
                 }
             }
-
-
         }
     }
 
@@ -131,7 +140,7 @@ fun PlaylistScreen(viewModel: PlayerViewModel, onNavigateToSongChooser: () -> Un
             ) {
                 Button(onClick = { openDialog.value = true }) {
                     Text(
-                        text = "CREATE PLAYLIST",
+                        text = stringResource(R.string.create_playlist).uppercase(),
                         fontSize = 30.sp,
                         fontFamily = FontFamily(Font(R.font.yanone_kaffeesatz_light))
                     )
@@ -148,32 +157,61 @@ fun PlaylistScreen(viewModel: PlayerViewModel, onNavigateToSongChooser: () -> Un
                 )
 
                 LazyColumn(state = listState, modifier = Modifier.padding(vertical = 8.dp)) {
+
                     items(items = playlists.value.keys.toList()) { playlist ->
                         Row(
                             horizontalArrangement = Arrangement.Center,
-                            modifier = Modifier.fillParentMaxHeight(0.1f)
+                            modifier = Modifier.fillParentMaxHeight(1.div(12f))
                         ) {
                             IconButton(
-                                onClick = { },
+                                onClick = {
+                                    viewModel.currentPlaylist.value = playlist
+                                    onNavigateToMainScreen.invoke()
+                                },
+                                modifier = Modifier
+                                    .padding(start = 16.dp)
+                                    .requiredSize(48.dp)
                             ) {
                                 Icon(
                                     painterResource(id = R.drawable.ic_playlist_songs),
                                     contentDescription = "Play",
-                                    modifier = Modifier
-                                        .padding(start = 16.dp)
-                                        .requiredSize(40.dp),
                                     tint = MaterialTheme.colorScheme.primary
                                 )
                             }
-                            Text(
-                                text = playlist.name,
+
+                            Column(
                                 modifier = Modifier
-                                    .weight(1f),
-                                textAlign = TextAlign.Center,
-                                fontSize = 20.sp,
-                                fontFamily = FontFamily(Font(R.font.yanone_kaffeesatz_semi_bold))
+                                    .padding(horizontal = 16.dp)
+                                    .weight(1f)
+                                    .height(40.dp)
+                                    .align(alignment = Alignment.CenterVertically),
+                                horizontalAlignment = Alignment.CenterHorizontally
                             )
-                            PlaylistMenu()
+                            {
+                                Text(
+                                    text = playlist.name,
+                                    modifier = Modifier
+                                        .weight(1f),
+                                    textAlign = TextAlign.Center,
+                                    fontSize = 20.sp,
+                                    fontFamily = FontFamily(Font(R.font.yanone_kaffeesatz_semi_bold))
+
+                                )
+                                Text(
+                                    text = playlist.songs.size.toString(),
+                                    modifier = Modifier
+                                        .weight(1f),
+                                    textAlign = TextAlign.Center,
+                                    fontSize = 14.sp,
+                                    fontFamily = FontFamily(Font(R.font.yanone_kaffeesatz_light))
+                                )
+                            }
+
+                            PlaylistMenu(
+                                playlist = playlist,
+                                viewModel = viewModel,
+                                onNavigateToSongChooser = onNavigateToSongChooser
+                            )
                         }
                     }
                 }
@@ -185,7 +223,11 @@ fun PlaylistScreen(viewModel: PlayerViewModel, onNavigateToSongChooser: () -> Un
 
 
 @Composable
-fun PlaylistMenu() {
+fun PlaylistMenu(
+    playlist: Playlist,
+    viewModel: PlayerViewModel,
+    onNavigateToSongChooser: () -> Unit
+) {
     var expanded by remember { mutableStateOf(false) }
 
     Box {
@@ -201,20 +243,32 @@ fun PlaylistMenu() {
             onDismissRequest = { expanded = false }
         ) {
             Text(
-                "Удалить",
+                stringResource(R.string.Delete),
                 fontSize = 18.sp,
                 modifier = Modifier
                     .padding(10.dp)
-                    .clickable(onClick = {})
+                    .clickable(onClick = {
+                        viewModel.currentPlaylist.value = null
+                        viewModel.deletePlaylist(
+                            currentPlaylist = playlist
+                        )
+                        expanded = false
+                    })
             )
             Text(
-                "Редактировать",
+                stringResource(R.string.edit),
                 fontSize = 18.sp,
                 modifier = Modifier
                     .padding(10.dp)
-                    .clickable(onClick = {})
+                    .clickable(onClick = {
+                        onNavigateToSongChooser.invoke()
+                        viewModel.playlistName.value = playlist.name
+                        viewModel.createChosenSongList(playlist)
+                        expanded = false
+                    })
             )
         }
     }
 }
+
 

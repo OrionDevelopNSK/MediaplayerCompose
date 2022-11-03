@@ -1,5 +1,6 @@
 package com.orion.mediaplayercompose.data.entities
 
+import android.annotation.SuppressLint
 import androidx.annotation.NonNull
 import androidx.room.Entity
 import androidx.room.Ignore
@@ -9,11 +10,12 @@ import com.orion.mediaplayercompose.data.models.Song
 
 @Entity(tableName = "playlists")
 data class PlaylistEntity(
+    @SuppressLint("KotlinNullnessAnnotation")
     @PrimaryKey
     @NonNull
     val playlistName: String,
 
-) {
+    ) {
 
     @Ignore
     var songEntities: List<SongEntity>? = null

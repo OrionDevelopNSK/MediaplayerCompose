@@ -1,5 +1,6 @@
 package com.orion.mediaplayercompose.data.entities
 
+import android.annotation.SuppressLint
 import androidx.annotation.NonNull
 import androidx.room.Entity
 import androidx.room.ForeignKey
@@ -24,8 +25,10 @@ import androidx.room.Index
     indices = [Index(value = ["playlistName", "data"], unique = true)]
 )
 data class PlaylistSongEntity(
+    @SuppressLint("KotlinNullnessAnnotation")
     @NonNull
     val playlistName: String,
+    @SuppressLint("KotlinNullnessAnnotation")
     @NonNull
     val data: String
 )

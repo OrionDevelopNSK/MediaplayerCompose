@@ -1,5 +1,6 @@
 package com.orion.mediaplayercompose.data.entities
 
+import android.annotation.SuppressLint
 import androidx.annotation.NonNull
 import androidx.room.Entity
 import androidx.room.Index
@@ -15,6 +16,7 @@ import com.orion.mediaplayercompose.data.models.Song
         )]
 )
 data class SongEntity(
+    @SuppressLint("KotlinNullnessAnnotation")
     @PrimaryKey
     @NonNull
     val data: String,

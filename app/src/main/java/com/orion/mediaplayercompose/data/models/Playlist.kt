@@ -5,7 +5,7 @@ import com.orion.mediaplayercompose.data.entities.SongEntity
 
 data class Playlist(
     val name: String,
-    val songs: List<Song>
+    val songs: MutableList<Song>
 ){
     fun toPlaylistEntity(): PlaylistEntity {
         val songEntities = mutableListOf<SongEntity>()
@@ -17,4 +17,21 @@ data class Playlist(
         playlistEntity.songEntities = songEntities
         return playlistEntity
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Playlist
+
+        if (name != other.name) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return name.hashCode()
+    }
+
+
 }

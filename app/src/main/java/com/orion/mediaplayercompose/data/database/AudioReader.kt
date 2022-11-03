@@ -2,11 +2,14 @@ package com.orion.mediaplayercompose.data.database
 
 import android.content.ContentResolver
 import android.content.Context
+import android.os.Build
 import android.provider.MediaStore
+import androidx.annotation.RequiresApi
 import com.orion.mediaplayercompose.data.models.Song
 
 class AudioReader(private val context: Context) {
 
+    @RequiresApi(Build.VERSION_CODES.R)
     fun readMediaData(): List<Song> {
         val projection = arrayOf(
             MediaStore.MediaColumns.TITLE,
@@ -30,7 +33,7 @@ class AudioReader(private val context: Context) {
         val columnIndexDuration = cursorAudio.getColumnIndex(MediaStore.MediaColumns.DURATION)
         val columnIndexData = cursorAudio.getColumnIndex(MediaStore.MediaColumns.DATA)
 
-        var songs = mutableListOf<Song>()
+        val songs = mutableListOf<Song>()
 
         while (cursorAudio.moveToNext()) {
             val song = Song(

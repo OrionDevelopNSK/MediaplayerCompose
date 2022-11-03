@@ -1,3 +1,18 @@
 <resources>
     <string name="app_name">MediaplayerCompose</string>
+    <string name="create_playlist">Создать плейлист</string>
+    <string name="playlist_name">Playlist name</string>
+    <string name="Delete">Delete</string>
+    <string name="edit">Edit</string>
+    <string name="all_songs">All</string>
+    <string name="playlist">Playlist</string>
+    <string name="find_song">Find song</string>
+    <string name="not_selected">Not selected</string>
+    <string name="sort_by">Sort by:</string>
+    <string name="date_of_addition">- date of addition</string>
+    <string name="rating">- rating</string>
+    <string name="listening_frequency">- listening frequency</string>
+    <string name="save_playlist">Save playlist?</string>
+    <string name="back">Back</string>
+    <string name="save">Save</string>
 </resources>

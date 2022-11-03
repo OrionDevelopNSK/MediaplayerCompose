@@ -1,6 +1,6 @@
 package com.orion.mediaplayercompose.utils
 
-enum class StateMode {
+enum class PlaybackMode {
     LOOP,
     REPEAT,
     RANDOM

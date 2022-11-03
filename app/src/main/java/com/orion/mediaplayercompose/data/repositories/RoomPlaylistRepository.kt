@@ -1,23 +1,41 @@
 package com.orion.mediaplayercompose.data.repositories
 
-import com.orion.mediaplayercompose.data.dao.PlaylistDao
+import com.orion.mediaplayercompose.data.dao.RoomDao
 import com.orion.mediaplayercompose.data.entities.PlaylistEntity
 import com.orion.mediaplayercompose.data.entities.PlaylistSongEntity
+import com.orion.mediaplayercompose.data.entities.SongEntity
 import com.orion.mediaplayercompose.data.models.Playlist
 import com.orion.mediaplayercompose.data.models.Song
 
-class RoomPlaylistRepository(private val playlistDao: PlaylistDao) {
+class RoomPlaylistRepository(private val roomDao: RoomDao) {
 
-    fun insertOrUpdatePlaylistAndSoundTrack(playlistEntity: PlaylistEntity, playlistSongEntityList : List<PlaylistSongEntity>){
-        playlistDao.deleteByPlaylistNameFromLinkingTable(playlistEntity.playlistName)
-        playlistDao.insertPlaylistAndSoundTrack(playlistEntity, playlistSongEntityList)
+    suspend fun insertOrUpdatePlaylistAndSoundTrack(playlistEntity: PlaylistEntity, playlistSongEntityList : List<PlaylistSongEntity>){
+        roomDao.deleteByPlaylistNameFromLinkingTable(playlistEntity.playlistName)
+        roomDao.insertPlaylistAndSoundTrack(playlistEntity, playlistSongEntityList)
     }
 
-    fun getPlaylistWithSoundTrack() : Map<Playlist, MutableList<Song>>{
-        return playlistDao.getPlaylistWithSoundTrack()
+    suspend fun getPlaylistWithSoundTrack() : MutableMap<Playlist, MutableList<Song>>{
+        return roomDao.getPlaylistWithSoundTrack()
     }
 
-    fun deletePlaylists(playlist: PlaylistEntity) {
-        playlistDao.deletePlaylist(playlist)
+    suspend fun deletePlaylists(playlist: PlaylistEntity) {
+        roomDao.deletePlaylist(playlist)
+    }
+
+    suspend fun insertAllSongs(songs: List<Song>) {
+        val songsEntities = mutableListOf<SongEntity>()
+
+        for (song in songs) {
+            val songEntity = SongEntity(
+                data = song.data,
+                title = song.title,
+                artist = song.artist,
+                duration = song.duration,
+                rating = song.rating,
+                countOfLaunches = song.countOfLaunches
+            )
+            songsEntities.add(songEntity)
+        }
+        roomDao.insertAllSongs(songsEntities)
     }
 }
