@@ -1,5 +1,7 @@
 package com.orion.mediaplayercompose.screens
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -30,9 +32,9 @@ import com.orion.mediaplayercompose.utils.PlaybackMode
 import com.orion.mediaplayercompose.utils.SortingType
 import com.orion.mediaplayercompose.utils.snappyLazyColumn
 import com.orion.mediaplayercompose.viewmodels.PlayerViewModel
-import kotlinx.coroutines.CoroutineScope
 
 
+@RequiresApi(Build.VERSION_CODES.R)
 @Composable
 fun MainScreen(viewModel: PlayerViewModel, onNavigateToPlaylists: () -> Unit) {
 
@@ -65,6 +67,7 @@ fun MainScreen(viewModel: PlayerViewModel, onNavigateToPlaylists: () -> Unit) {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.R)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UpperContainer(onNavigateToPlaylists: () -> Unit, viewModel: PlayerViewModel) {
@@ -119,21 +122,22 @@ fun UpperContainer(onNavigateToPlaylists: () -> Unit, viewModel: PlayerViewModel
 
 @Composable
 fun ListSongs(viewModel: PlayerViewModel) {
-    val listState: LazyListState = rememberLazyListState()
-    val coroutineScope: CoroutineScope = rememberCoroutineScope()
+    val listState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
     val songs: List<Song> by viewModel.allSongs.observeAsState(mutableListOf())
-    val playlists: State<Map<Playlist, MutableList<Song>>> =
-        viewModel.allPlaylists.observeAsState(mapOf())
-    var state by remember { mutableStateOf(0) }
-    val titles =
-        mutableListOf(stringResource(R.string.all_songs), stringResource(R.string.playlist))
+    val playlists = viewModel.allPlaylists.observeAsState(mapOf())
+    var state = viewModel.currentTabPosition.observeAsState(0).value
+    val titles = mutableListOf(stringResource(R.string.all_songs), stringResource(R.string.playlist))
 
     Column(modifier = Modifier.padding(bottom = 8.dp)) {
-        TabRow(selectedTabIndex = state, modifier = Modifier.padding(bottom = 9.dp)) {
+        TabRow(selectedTabIndex = state!!, modifier = Modifier.padding(bottom = 9.dp)) {
             titles.forEachIndexed { index, title ->
                 Tab(
-                    selected = state == index,
-                    onClick = { state = index },
+                    selected = viewModel.currentTabPosition.value == index,
+                    onClick = {
+                        state = index
+                        viewModel.currentTabPosition.value = index
+                    },
                     text = {
                         Text(
                             text = if (index == 1) {
@@ -490,6 +494,7 @@ fun SongMenu() {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.R)
 @Composable
 fun PlaybackOrderMenu(viewModel: PlayerViewModel) {
     var playbackOrder by remember { mutableStateOf(false) }

@@ -166,6 +166,7 @@ fun PlaylistScreen(
                             IconButton(
                                 onClick = {
                                     viewModel.currentPlaylist.value = playlist
+                                    viewModel.currentTabPosition.value = 1
                                     onNavigateToMainScreen.invoke()
                                 },
                                 modifier = Modifier

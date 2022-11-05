@@ -8,6 +8,7 @@ import com.orion.mediaplayercompose.data.database.DatabaseHelper
 import com.orion.mediaplayercompose.data.models.Playlist
 import com.orion.mediaplayercompose.data.models.Song
 import com.orion.mediaplayercompose.utils.PlaybackMode
+import com.orion.mediaplayercompose.utils.Sorting
 import com.orion.mediaplayercompose.utils.SortingType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -25,9 +26,15 @@ class PlayerViewModel @Inject constructor(
     val playlistName: MutableLiveData<String> = MutableLiveData("")
     val isChosenSongListFromUi: MutableLiveData<MutableList<Boolean>> =
         MutableLiveData(mutableListOf())
-    val sortingType: MutableLiveData<SortingType> = MutableLiveData(SortingType.DATE)
 
+    val currentTabPosition : MutableLiveData<Int> = MutableLiveData(0)
+
+    val isPlayingFromPlaylist: MutableLiveData<Boolean> = MutableLiveData(false)
+
+    private val sortingType: MutableLiveData<SortingType> = MutableLiveData(SortingType.DATE)
     private val lastCreatedPlaylist: MutableLiveData<Playlist> = MutableLiveData()
+
+    private lateinit var defaultSongList: MutableList<Song>
 
     fun createPlaylist(states: MutableList<Boolean>) {
         val tmpSongs: MutableList<Song> = mutableListOf()
@@ -60,12 +67,11 @@ class PlayerViewModel @Inject constructor(
         }
     }
 
-    init {
-        databaseHelper.viewModel = this
-    }
-
     @RequiresApi(Build.VERSION_CODES.R)
-    fun readSongs() = databaseHelper.readSongs()
+    fun readSongs() {
+        defaultSongList = databaseHelper.readSongs()
+        sortSongs(sorting = sortingType.value!!)
+    }
 
     fun savePlaylist() {
         val chosenPlaylist = lastCreatedPlaylist.value
@@ -75,10 +81,27 @@ class PlayerViewModel @Inject constructor(
         databaseHelper.savePlaylist(chosenPlaylist)
     }
 
-    fun loadPlaylist() = databaseHelper.loadPlaylist()
+    fun loadPlaylist() {
+        allPlaylists.value = databaseHelper.loadPlaylist()
+    }
 
-    fun deletePlaylist(currentPlaylist: Playlist) = databaseHelper.deletePlaylist(currentPlaylist)
+    fun deletePlaylist(currentPlaylist: Playlist) {
+        allPlaylists.value = databaseHelper.deletePlaylist(currentPlaylist)
+    }
 
-    fun changeSortingType(sorting: SortingType) = databaseHelper.sortSongs(sorting)
+    @RequiresApi(Build.VERSION_CODES.R)
+    fun changeSortingType(sorting: SortingType) {
+        sortSongs(sorting)
+    }
+
+    private fun sortSongs(sorting: SortingType) {
+        allSongs.value =
+            when (sorting) {
+                SortingType.DATE -> Sorting.byDate(defaultSongList)
+                SortingType.RATING -> Sorting.byRating(defaultSongList)
+                SortingType.REPEATABILITY -> Sorting.byRepeatability(defaultSongList)
+            }
+        sortingType.value = sorting
+    }
 
 }

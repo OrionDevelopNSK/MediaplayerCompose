@@ -10,6 +10,7 @@ import com.orion.mediaplayercompose.utils.Sorting
 import com.orion.mediaplayercompose.utils.SortingType
 import com.orion.mediaplayercompose.utils.SortingType.*
 import com.orion.mediaplayercompose.viewmodels.PlayerViewModel
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
@@ -19,21 +20,21 @@ class DatabaseHelper @Inject constructor(
     database: AppDataBase,
     private val audioReader: AudioReader
 ) {
-    lateinit var defaultSongList: List<Song>
-    lateinit var viewModel: PlayerViewModel
-
     private val roomPlaylistRepository = RoomPlaylistRepository(database.roomDao())
 
+
     @RequiresApi(Build.VERSION_CODES.R)
-    fun readSongs() {
+    fun readSongs() : MutableList<Song> {
+        var defaultSongList: MutableList<Song> = emptyArray<Song>().toMutableList()
         runBlocking {
-            launch {
+            val job = async {
                 val readMediaData = audioReader.readMediaData()
-                defaultSongList = ArrayList(readMediaData)
-                sortSongs(viewModel.sortingType.value!!)
                 roomPlaylistRepository.insertAllSongs(readMediaData)
+                defaultSongList = ArrayList(readMediaData)
             }
+            job.await()
         }
+        return defaultSongList
     }
 
     fun savePlaylist(chosenPlaylist: Playlist?) {
@@ -51,39 +52,28 @@ class DatabaseHelper @Inject constructor(
                     playlistEntity,
                     playlistSongEntities
                 )
-
             }
         }
     }
 
-    fun loadPlaylist() {
-
-
+    fun loadPlaylist(): MutableMap<Playlist, MutableList<Song>> {
+        val playlists: MutableMap<Playlist, MutableList<Song>>
         runBlocking {
-            launch {
-                viewModel.allPlaylists.postValue(roomPlaylistRepository.getPlaylistWithSoundTrack())
-//                AsyncTask.execute { viewModel.allPlaylists.postValue(roomPlaylistRepository.getPlaylistWithSoundTrack()) }
-            }
+            val job = async { roomPlaylistRepository.getPlaylistWithSoundTrack() }
+            playlists = job.await()
         }
+        return playlists;
     }
 
-    fun deletePlaylist(currentPlaylist: Playlist) =
+    fun deletePlaylist(currentPlaylist: Playlist): MutableMap<Playlist, MutableList<Song>> {
+        val playlists: MutableMap<Playlist, MutableList<Song>>
         runBlocking {
-            launch {
+            val job = async {
                 roomPlaylistRepository.deletePlaylists(currentPlaylist.toPlaylistEntity())
-                viewModel.allPlaylists.postValue(roomPlaylistRepository.getPlaylistWithSoundTrack())
+                roomPlaylistRepository.getPlaylistWithSoundTrack()
             }
+            playlists = job.await()
         }
-
-
-    fun sortSongs(sorting: SortingType) {
-        viewModel.allSongs.postValue(
-            when (sorting) {
-                DATE -> Sorting.byDate(defaultSongList)
-                RATING -> Sorting.byRating(defaultSongList)
-                REPEATABILITY -> Sorting.byRepeatability(defaultSongList)
-            }
-        )
-        viewModel.sortingType.value = sorting
+        return playlists
     }
 }
