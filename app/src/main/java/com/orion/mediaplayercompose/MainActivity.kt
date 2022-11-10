@@ -42,6 +42,7 @@ class MainActivity : ComponentActivity() {
         )
     }
 
+    @RequiresApi(Build.VERSION_CODES.R)
     @Composable
     fun AppNavHost(
         modifier: Modifier = Modifier,
@@ -86,8 +87,9 @@ class MainActivity : ComponentActivity() {
             }
 
             if (isGranted) {
-                viewModel.readSongs()
-                viewModel.loadPlaylist()
+                viewModel.getSongsReader().readSongs()
+                viewModel.getSongSorter().sortSongs()
+                viewModel.getPlaylistController().loadPlaylist()
 
                 setContent {
                     MediaplayerComposeTheme {

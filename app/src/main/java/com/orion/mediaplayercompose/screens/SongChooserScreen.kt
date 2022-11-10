@@ -1,6 +1,5 @@
 package com.orion.mediaplayercompose.screens
 
-import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -131,8 +130,8 @@ fun BottomContainer(
 
             Button(
                 onClick = {
-                    if (isChooses.any { it }) viewModel.createPlaylist(isChooses)
-                    viewModel.savePlaylist()
+                    if (isChooses.any { it }) viewModel.getPlaylistController().createPlaylist(isChooses)
+                    viewModel.getPlaylistController().savePlaylist()
                     viewModel.isChosenSongListFromUi.value = isChooses
                     val value = viewModel.currentPlaylist.value
                     viewModel.currentPlaylist.value = null
@@ -164,11 +163,7 @@ fun ListSongs(songs: List<Song>, isChooses: MutableList<Boolean>, viewModel: Pla
             ) {
                 IconButton(
                     onClick = {
-                        val isState = song.isPlayed
-                        songs.forEach {
-                            if (it.isPlayed) it.isPlayed = false
-                        }
-                        song.isPlayed = !isState
+                        viewModel.getMediaPlayer().start(song)
                     },
                     modifier = Modifier
                         .padding(start = 16.dp)

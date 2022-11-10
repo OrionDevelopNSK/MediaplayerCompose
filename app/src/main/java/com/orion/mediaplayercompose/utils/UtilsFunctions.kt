@@ -23,8 +23,8 @@ fun snappyLazyColumn(listState: LazyListState, coroutineScope: CoroutineScope){
     }
 }
 
-fun toMinutesAndSeconds(duration : Long) : String{
-    val min: Int = (duration / (60 * 1000)).toInt()
-    val sec = ((duration - min * 60 * 1000) / 1000f).roundToInt()
+fun Int.toMinutesAndSeconds() : String{
+    val min: Int = (this / (60 * 1000))
+    val sec = ((this - min * 60 * 1000) / 1000f).roundToInt()
     return String.format("%02d", min) + ":" + String.format("%02d", sec)
 }

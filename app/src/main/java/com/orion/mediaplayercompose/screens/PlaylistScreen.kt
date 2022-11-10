@@ -1,10 +1,8 @@
 package com.orion.mediaplayercompose.screens
 
-import androidx.activity.ComponentActivity
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -27,10 +25,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.orion.mediaplayercompose.R
 import com.orion.mediaplayercompose.data.models.Playlist
-import com.orion.mediaplayercompose.data.models.Song
 import com.orion.mediaplayercompose.utils.snappyLazyColumn
 import com.orion.mediaplayercompose.viewmodels.PlayerViewModel
-import kotlinx.coroutines.CoroutineScope
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,10 +36,9 @@ fun PlaylistScreen(
     onNavigateToMainScreen: () -> Unit
 ) {
 
-    val playlists: State<Map<Playlist, MutableList<Song>>> =
-        viewModel.allPlaylists.observeAsState(mapOf())
-    val listState: LazyListState = rememberLazyListState()
-    val coroutineScope: CoroutineScope = rememberCoroutineScope()
+    val playlists = viewModel.allPlaylists.observeAsState(mapOf())
+    val listState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
     var text by remember { mutableStateOf(TextFieldValue("")) }
     val openDialog = remember { mutableStateOf(false) }
 
@@ -104,7 +99,7 @@ fun PlaylistScreen(
                     Button(
                         onClick = {
                             viewModel.playlistName.value = text.text
-                            viewModel.clearChosenSongList()
+                            viewModel.getChosenSongListController().clearChosenSongList()
                             onNavigateToSongChooser.invoke()
                         },
                         enabled = text.text.isNotEmpty(),
@@ -250,7 +245,7 @@ fun PlaylistMenu(
                     .padding(10.dp)
                     .clickable(onClick = {
                         viewModel.currentPlaylist.value = null
-                        viewModel.deletePlaylist(
+                        viewModel.getPlaylistController().deletePlaylist(
                             currentPlaylist = playlist
                         )
                         expanded = false
@@ -264,7 +259,7 @@ fun PlaylistMenu(
                     .clickable(onClick = {
                         onNavigateToSongChooser.invoke()
                         viewModel.playlistName.value = playlist.name
-                        viewModel.createChosenSongList(playlist)
+                        viewModel.getChosenSongListController().createChosenSongList(playlist)
                         expanded = false
                     })
             )

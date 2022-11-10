@@ -20,8 +20,8 @@ fun LazyListState.isHalfPastItemTop(): Boolean {
     return firstVisibleItemScrollOffset > 500
 }
 
-fun Long.toMinutesAndSeconds(duration : Long) : String{
-    val min: Int = (duration / (60 * 1000)).toInt()
-    val sec = ((duration - min * 60 * 1000) / 1000f).roundToInt()
+fun Long.toMinutesAndSeconds() : String{
+    val min: Int = (this / (60 * 1000)).toInt()
+    val sec = ((this - min * 60 * 1000) / 1000f).roundToInt()
     return String.format("%02d", min) + ":" + String.format("%02d", sec)
 }

@@ -31,6 +31,7 @@ import com.orion.mediaplayercompose.ui.theme.ThirdColor
 import com.orion.mediaplayercompose.utils.PlaybackMode
 import com.orion.mediaplayercompose.utils.SortingType
 import com.orion.mediaplayercompose.utils.snappyLazyColumn
+import com.orion.mediaplayercompose.utils.toMinutesAndSeconds
 import com.orion.mediaplayercompose.viewmodels.PlayerViewModel
 
 
@@ -127,7 +128,8 @@ fun ListSongs(viewModel: PlayerViewModel) {
     val songs: List<Song> by viewModel.allSongs.observeAsState(mutableListOf())
     val playlists = viewModel.allPlaylists.observeAsState(mapOf())
     var state = viewModel.currentTabPosition.observeAsState(0).value
-    val titles = mutableListOf(stringResource(R.string.all_songs), stringResource(R.string.playlist))
+    val titles =
+        mutableListOf(stringResource(R.string.all_songs), stringResource(R.string.playlist))
 
     Column(modifier = Modifier.padding(bottom = 8.dp)) {
         TabRow(selectedTabIndex = state!!, modifier = Modifier.padding(bottom = 9.dp)) {
@@ -159,13 +161,11 @@ fun ListSongs(viewModel: PlayerViewModel) {
             AllSongsList(
                 listState = listState,
                 songs = songs,
-                playlists = playlists,
                 viewModel = viewModel
             )
         } else if (state == 1 && viewModel.currentPlaylist.value != null) {
             SongsFromCurrentPlaylist(
                 listState = listState,
-                songs = songs,
                 playlists = playlists,
                 viewModel = viewModel
             )
@@ -174,29 +174,10 @@ fun ListSongs(viewModel: PlayerViewModel) {
     }
 }
 
-fun refreshSongsCheckBox(
-    song: Song,
-    songs: List<Song>,
-    viewModel: PlayerViewModel,
-    playlists: State<Map<Playlist, MutableList<Song>>>
-) {
-    val isState = song.isPlayed
-    songs.forEach {
-        if (it.isPlayed) it.isPlayed = false
-    }
-
-    playlists.value[viewModel.currentPlaylist.value]?.toList()?.forEach {
-        if (it.isPlayed) it.isPlayed = false
-    }
-
-    song.isPlayed = !isState
-}
-
 @Composable
 fun AllSongsList(
     listState: LazyListState,
     songs: List<Song>,
-    playlists: State<Map<Playlist, MutableList<Song>>>,
     viewModel: PlayerViewModel
 ) {
     LazyColumn(state = listState) {
@@ -208,12 +189,7 @@ fun AllSongsList(
 
                 IconButton(
                     onClick = {
-                        refreshSongsCheckBox(
-                            song = song,
-                            songs = songs,
-                            viewModel = viewModel,
-                            playlists = playlists
-                        )
+                        viewModel.getMediaPlayer().start(song)
                     },
                     modifier = Modifier
                         .padding(start = 16.dp)
@@ -264,7 +240,6 @@ fun AllSongsList(
 @Composable
 fun SongsFromCurrentPlaylist(
     listState: LazyListState,
-    songs: List<Song>,
     playlists: State<Map<Playlist, MutableList<Song>>>,
     viewModel: PlayerViewModel
 ) {
@@ -277,12 +252,7 @@ fun SongsFromCurrentPlaylist(
 
                 IconButton(
                     onClick = {
-                        refreshSongsCheckBox(
-                            song = song,
-                            songs = songs,
-                            viewModel = viewModel,
-                            playlists = playlists
-                        )
+                        viewModel.getMediaPlayer().start(song)
                     },
                     modifier = Modifier
                         .padding(start = 16.dp)
@@ -333,12 +303,17 @@ fun SongsFromCurrentPlaylist(
 
 @Composable
 fun DawnContainer(viewModel: PlayerViewModel) {
-    var sliderPosition by remember { mutableStateOf(0f) }
     val playbackMode = viewModel.playbackMode.observeAsState(PlaybackMode.LOOP)
-    val isPlayed: State<Boolean> = viewModel.isMediaPlayerPlayed.observeAsState(false)
+    val isPlayed = viewModel.isMediaPlayerPlayed.observeAsState(false).value
+    val currentSong = viewModel.currentSong.observeAsState().value
+    var sliderPosition = viewModel.sliderThumbPosition.observeAsState(0f).value
+    val currentPositionText = viewModel.currentPosition.observeAsState().value
+    val tempSliderPosition = remember { mutableStateOf(sliderPosition) }
+
+    var isTouch = false
 
     Text(
-        text = "MUSIC SONG ", //TODO
+        text = currentSong?.title ?: "MUSIC SONG ",
         fontSize = 24.sp,
         textAlign = TextAlign.Center,
         modifier = Modifier.padding(top = 8.dp),
@@ -347,8 +322,17 @@ fun DawnContainer(viewModel: PlayerViewModel) {
     )
 
     Slider(
-        value = sliderPosition,
-        onValueChange = { sliderPosition = it },
+        value = if(!isTouch) sliderPosition else return,
+        onValueChange = {
+            isTouch = true
+            viewModel.sliderThumbPosition.value = it
+            tempSliderPosition.value = it
+        },
+        onValueChangeFinished = {
+            viewModel.getMediaPlayer().setCurrentPosition((tempSliderPosition.value * viewModel.currentSong.value!!.duration).toLong())
+            sliderPosition = tempSliderPosition.value
+            isTouch = false
+        },
         modifier = Modifier
             .padding(horizontal = 16.dp)
             .height(20.dp),
@@ -369,14 +353,14 @@ fun DawnContainer(viewModel: PlayerViewModel) {
             .height(14.dp), horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
-            text = "00:00",
+            text = currentPositionText ?: "00:00",
             fontSize = 12.sp,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(start = 16.dp),
             color = MaterialTheme.colorScheme.primary
         )
         Text(
-            text = "00:00",
+            text = if (viewModel.currentSong.value != null) viewModel.currentSong.value!!.duration.toMinutesAndSeconds() else "00:00",
             fontSize = 12.sp,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(end = 16.dp),
@@ -400,7 +384,9 @@ fun DawnContainer(viewModel: PlayerViewModel) {
             )
         }
         IconButton(
-            onClick = { /*TODO*/ }
+            onClick = {
+                viewModel.getMediaPlayer().previous()
+            }
         ) {
             Icon(
                 painterResource(id = R.drawable.ic_previous),
@@ -411,19 +397,21 @@ fun DawnContainer(viewModel: PlayerViewModel) {
         }
         IconButton(
             onClick = {
-                viewModel.isMediaPlayerPlayed.value = !viewModel.isMediaPlayerPlayed.value!!
+                viewModel.currentSong.value?.let { viewModel.getMediaPlayer().start(it) }
             },
             modifier = Modifier.padding(horizontal = 10.dp)
         ) {
             Icon(
-                painterResource(id = if (!isPlayed.value) R.drawable.ic_play else R.drawable.ic_pause),
+                painterResource(id = if (!isPlayed) R.drawable.ic_play else R.drawable.ic_pause),
                 contentDescription = "Play",
                 modifier = Modifier.requiredSize(50.dp),
                 tint = MaterialTheme.colorScheme.primary
             )
         }
         IconButton(
-            onClick = { /*TODO*/ }
+            onClick = {
+                viewModel.getMediaPlayer().next()
+            }
         ) {
             Icon(
                 painterResource(id = R.drawable.ic_next),
@@ -433,7 +421,7 @@ fun DawnContainer(viewModel: PlayerViewModel) {
             )
         }
         IconButton(
-            onClick = { viewModel.changeStateMode() },
+            onClick = { viewModel.getStateModeChanger().changeStateMode() },
             modifier = Modifier.padding(horizontal = 4.dp)
         ) {
             Icon(
@@ -532,7 +520,7 @@ fun PlaybackOrderMenu(viewModel: PlayerViewModel) {
                 modifier = Modifier
                     .padding(10.dp)
                     .clickable(onClick = {
-                        viewModel.changeSortingType(SortingType.DATE)
+                        viewModel.getSongSorter().changeSortingType(SortingType.DATE)
                         playbackOrder = false
                     }),
                 color = MaterialTheme.colorScheme.primary
@@ -543,7 +531,7 @@ fun PlaybackOrderMenu(viewModel: PlayerViewModel) {
                 modifier = Modifier
                     .padding(10.dp)
                     .clickable(onClick = {
-                        viewModel.changeSortingType(SortingType.RATING)
+                        viewModel.getSongSorter().changeSortingType(SortingType.RATING)
                         playbackOrder = false
                     }),
                 color = MaterialTheme.colorScheme.primary
@@ -555,7 +543,7 @@ fun PlaybackOrderMenu(viewModel: PlayerViewModel) {
                 modifier = Modifier
                     .padding(10.dp)
                     .clickable(onClick = {
-                        viewModel.changeSortingType(SortingType.REPEATABILITY)
+                        viewModel.getSongSorter().changeSortingType(SortingType.REPEATABILITY)
                         playbackOrder = false
                     }),
                 color = MaterialTheme.colorScheme.primary
